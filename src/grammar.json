@@ -8,13 +8,20 @@
         "members": [
           {
             "type": "SYMBOL",
-            "name": "text"
+            "name": "freetext"
           },
           {
             "type": "SYMBOL",
             "name": "list"
           }
         ]
+      }
+    },
+    "freetext": {
+      "type": "TOKEN",
+      "content": {
+        "type": "PATTERN",
+        "value": "[^()\\[\\];]+"
       }
     },
     "comment": {
@@ -44,10 +51,6 @@
           }
         ]
       }
-    },
-    "text": {
-      "type": "PATTERN",
-      "value": "[^()\\[\\]]+"
     },
     "list": {
       "type": "CHOICE",
@@ -99,23 +102,15 @@
       "members": [
         {
           "type": "SYMBOL",
+          "name": "reader_macro"
+        },
+        {
+          "type": "SYMBOL",
           "name": "list"
         },
         {
           "type": "SYMBOL",
-          "name": "_reader_macro"
-        },
-        {
-          "type": "SYMBOL",
           "name": "string"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "hex_number"
-        },
-        {
-          "type": "SYMBOL",
-          "name": "float"
         },
         {
           "type": "SYMBOL",
@@ -127,36 +122,36 @@
         }
       ]
     },
-    "_reader_macro": {
+    "reader_macro": {
       "type": "CHOICE",
       "members": [
         {
           "type": "SYMBOL",
-          "name": "quote"
+          "name": "m_quote"
         },
         {
           "type": "SYMBOL",
-          "name": "quasiquote"
+          "name": "m_quasiquote"
         },
         {
           "type": "SYMBOL",
-          "name": "unquote_splicing"
+          "name": "m_unquote_splicing"
         },
         {
           "type": "SYMBOL",
-          "name": "unquote"
+          "name": "m_unquote"
         },
         {
           "type": "SYMBOL",
-          "name": "get_macro"
+          "name": "m_get"
         },
         {
           "type": "SYMBOL",
-          "name": "_dispatch_macro"
+          "name": "m_dispatch"
         }
       ]
     },
-    "quote": {
+    "m_quote": {
       "type": "SEQ",
       "members": [
         {
@@ -169,7 +164,7 @@
         }
       ]
     },
-    "quasiquote": {
+    "m_quasiquote": {
       "type": "SEQ",
       "members": [
         {
@@ -182,7 +177,7 @@
         }
       ]
     },
-    "unquote_splicing": {
+    "m_unquote_splicing": {
       "type": "SEQ",
       "members": [
         {
@@ -195,7 +190,7 @@
         }
       ]
     },
-    "unquote": {
+    "m_unquote": {
       "type": "SEQ",
       "members": [
         {
@@ -208,7 +203,7 @@
         }
       ]
     },
-    "get_macro": {
+    "m_get": {
       "type": "SEQ",
       "members": [
         {
@@ -221,7 +216,7 @@
         }
       ]
     },
-    "_dispatch_macro": {
+    "m_dispatch": {
       "type": "SEQ",
       "members": [
         {
@@ -232,135 +227,168 @@
           "type": "CHOICE",
           "members": [
             {
-              "type": "SYMBOL",
-              "name": "boolean"
+              "type": "STRING",
+              "value": "t"
+            },
+            {
+              "type": "STRING",
+              "value": "f"
+            },
+            {
+              "type": "STRING",
+              "value": "inf"
+            },
+            {
+              "type": "STRING",
+              "value": "-inf"
+            },
+            {
+              "type": "STRING",
+              "value": "nan"
             },
             {
               "type": "SYMBOL",
-              "name": "special_float"
-            },
-            {
-              "type": "SYMBOL",
-              "name": "anon_fn"
+              "name": "list"
             }
           ]
         }
       ]
     },
-    "boolean": {
-      "type": "CHOICE",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "t"
-        },
-        {
-          "type": "STRING",
-          "value": "f"
-        }
-      ]
-    },
-    "special_float": {
-      "type": "CHOICE",
-      "members": [
-        {
-          "type": "STRING",
-          "value": "inf"
-        },
-        {
-          "type": "STRING",
-          "value": "-inf"
-        },
-        {
-          "type": "STRING",
-          "value": "nan"
-        }
-      ]
-    },
-    "anon_fn": {
-      "type": "SYMBOL",
-      "name": "list"
-    },
     "string": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "\""
+        },
+        {
+          "type": "REPEAT",
+          "content": {
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "PATTERN",
+                "value": "[^\"\\\\\\n]"
+              },
+              {
+                "type": "SYMBOL",
+                "name": "string_escape"
+              }
+            ]
+          }
+        },
+        {
+          "type": "STRING",
+          "value": "\""
+        }
+      ]
+    },
+    "string_escape": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "\\"
+        },
+        {
+          "type": "CHOICE",
+          "members": [
+            {
+              "type": "STRING",
+              "value": "n"
+            },
+            {
+              "type": "STRING",
+              "value": "t"
+            },
+            {
+              "type": "STRING",
+              "value": "\""
+            },
+            {
+              "type": "STRING",
+              "value": "\\"
+            },
+            {
+              "type": "SYMBOL",
+              "name": "string_escape_unicode"
+            }
+          ]
+        }
+      ]
+    },
+    "string_escape_unicode": {
+      "type": "SEQ",
+      "members": [
+        {
+          "type": "STRING",
+          "value": "u"
+        },
+        {
+          "type": "STRING",
+          "value": "{"
+        },
+        {
+          "type": "PATTERN",
+          "value": "[0-9a-fA-F]{1,6}"
+        },
+        {
+          "type": "STRING",
+          "value": "}"
+        }
+      ]
+    },
+    "number": {
+      "type": "CHOICE",
+      "members": [
+        {
+          "type": "SYMBOL",
+          "name": "int"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "hex"
+        },
+        {
+          "type": "SYMBOL",
+          "name": "float"
+        }
+      ]
+    },
+    "int": {
       "type": "TOKEN",
       "content": {
         "type": "SEQ",
         "members": [
           {
-            "type": "STRING",
-            "value": "\""
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "STRING",
+                "value": "-"
+              },
+              {
+                "type": "BLANK"
+              }
+            ]
           },
           {
-            "type": "REPEAT",
-            "content": {
-              "type": "CHOICE",
-              "members": [
-                {
-                  "type": "PATTERN",
-                  "value": "[^\"\\\\\\n]"
-                },
-                {
-                  "type": "SEQ",
-                  "members": [
-                    {
-                      "type": "STRING",
-                      "value": "\\"
-                    },
-                    {
-                      "type": "CHOICE",
-                      "members": [
-                        {
-                          "type": "STRING",
-                          "value": "n"
-                        },
-                        {
-                          "type": "STRING",
-                          "value": "t"
-                        },
-                        {
-                          "type": "STRING",
-                          "value": "\""
-                        },
-                        {
-                          "type": "STRING",
-                          "value": "\\"
-                        },
-                        {
-                          "type": "SEQ",
-                          "members": [
-                            {
-                              "type": "STRING",
-                              "value": "u"
-                            },
-                            {
-                              "type": "STRING",
-                              "value": "{"
-                            },
-                            {
-                              "type": "PATTERN",
-                              "value": "[0-9a-fA-F]{1,6}"
-                            },
-                            {
-                              "type": "STRING",
-                              "value": "}"
-                            }
-                          ]
-                        }
-                      ]
-                    }
-                  ]
-                }
-              ]
-            }
-          },
-          {
-            "type": "STRING",
-            "value": "\""
+            "type": "CHOICE",
+            "members": [
+              {
+                "type": "STRING",
+                "value": "0"
+              },
+              {
+                "type": "PATTERN",
+                "value": "[1-9]\\d*"
+              }
+            ]
           }
         ]
       }
     },
-    "hex_number": {
+    "hex": {
       "type": "TOKEN",
       "content": {
         "type": "SEQ",
@@ -530,39 +558,6 @@
                     ]
                   }
                 ]
-              }
-            ]
-          }
-        ]
-      }
-    },
-    "number": {
-      "type": "TOKEN",
-      "content": {
-        "type": "SEQ",
-        "members": [
-          {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "STRING",
-                "value": "-"
-              },
-              {
-                "type": "BLANK"
-              }
-            ]
-          },
-          {
-            "type": "CHOICE",
-            "members": [
-              {
-                "type": "STRING",
-                "value": "0"
-              },
-              {
-                "type": "PATTERN",
-                "value": "[1-9]\\d*"
               }
             ]
           }
