@@ -1,0 +1,7 @@
+.direnv
+node_modules
+bindings
+build
+src
+binding.gyp
+Cargo.toml
