@@ -97,7 +97,7 @@ module.exports = grammar({
 
     // anything excluding `(`, `)`, `[`, `]`, whitespace, and `;`
     //   additionally cannot start with a reader macro so that tree-sitter does not see such a symbol as a single token
-    symbol: ($) => token(/[^'`~%()\[\]\s;][^()\[\]\s;]*/),
+    symbol: ($) => token(/[^'`~%#()\[\]\s;][^()\[\]\s;]*/),
   },
 });
 
