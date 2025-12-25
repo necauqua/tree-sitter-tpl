@@ -1,7 +1,9 @@
+/// <reference types="tree-sitter-cli/dsl" />
+
 module.exports = grammar({
   name: "tpl",
 
-  extras: ($) => [/\s/, $.comment],
+  extras: ($) => [/\s/],
 
   rules: {
     source_file: ($) => repeat(choice($.freetext, $.list)),
@@ -33,11 +35,12 @@ module.exports = grammar({
     m_get: ($) => seq("%", $._expr),
     m_dispatch: ($) => seq("#", choice("t", "f", "inf", "-inf", "nan", $.list)),
 
-    string: ($) => seq('"', repeat(choice(/[^"\\\n]/, $.string_escape)), '"'),
+    string: ($) =>
+      seq('"', repeat(choice($.string_text, $.string_escape)), '"'),
 
+    string_text: ($) => token(/[^"\\\n]+/),
     string_escape: ($) =>
-      seq("\\", choice("n", "t", '"', "\\", $.string_escape_unicode)),
-    string_escape_unicode: ($) => seq("u", "{", /[0-9a-fA-F]{1,6}/, "}"),
+      token(seq("\\", choice("n", "t", '"', "\\", /u\{[0-9a-fA-F]{1,6}\}/))),
 
     number: ($) => choice($.int, $.hex, $.float),
 
@@ -53,10 +56,10 @@ module.exports = grammar({
             // .. `.456`, `.000456`
             seq(".", /\d+/),
             // scientific: `123e10`, `123.e10`, `123.456e10`, `.456e10`, `.00456e10`
-            //   ^ `e10` there can also be `e-10` or `e+10`, case-insensitive
+            //   ^ `e10` there can also be `e-10` or `e+10`
             seq(
               choice(seq(uint(), optional(seq(".", /\d*/))), seq(".", /\d+/)),
-              seq(/[eE][+-]?/, uint()),
+              seq(/e[+-]?/, uint()),
             ),
           ),
         ),
