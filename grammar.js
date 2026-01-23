@@ -6,7 +6,7 @@ module.exports = grammar({
   extras: ($) => [/\s/],
 
   rules: {
-    source_file: ($) => repeat(choice($.freetext, $.list)),
+    source_file: ($) => repeat(choice($.freetext, $.comment, $.list)),
 
     // free text outside of lists - also exclude ; to avoid freetext token gobbling semicolons from commented out lists
     freetext: ($) => token(/[^()\[\];]+/),

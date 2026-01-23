@@ -12,6 +12,10 @@
           },
           {
             "type": "SYMBOL",
+            "name": "comment"
+          },
+          {
+            "type": "SYMBOL",
             "name": "list"
           }
         ]
