@@ -1,19 +1,31 @@
 /// <reference types="tree-sitter-cli/dsl" />
 
+const uint = () => choice("0", /[1-9]\d*/);
+const psym = (s) => token(prec(1, s));
+
 module.exports = grammar({
   name: "tpl",
 
-  extras: ($) => [/\s/],
+  // handle all whitespace explicitly
+  extras: ($) => [],
 
   rules: {
-    source_file: ($) => repeat(choice($.freetext, $.comment, $.list)),
+    source_file: ($) =>
+      repeat(choice($.command, $.list, $.comment, $.freetext, /\r+|\n+/)),
 
-    // free text outside of lists - also exclude ; to avoid freetext token gobbling semicolons from commented out lists
-    freetext: ($) => token(/[^()\[\];]+/),
-    comment: ($) => token(seq(";", /[^;\n]*/, optional(";"))),
+    command: ($) =>
+      prec.right(
+        seq($.command_symbol, repeat(choice($._expr, $.comment, /[ \t]+/))),
+      ),
+
+    freetext: ($) => token(prec(-1000, /.+/)),
+    comment: ($) => token(seq(psym(";"), /[^;\r\n]*/, optional(";"))),
 
     list: ($) =>
-      choice(seq("(", repeat($._expr), ")"), seq("[", repeat($._expr), "]")),
+      choice(
+        seq("(", repeat(choice($._expr, $.comment, /\s+/)), ")"),
+        seq("[", repeat(choice($._expr, $.comment, /\s+/)), "]"),
+      ),
 
     _expr: ($) => choice($.reader_macro, $.list, $.string, $.number, $.symbol),
 
@@ -28,19 +40,22 @@ module.exports = grammar({
       ),
 
     // m_ prefixes because some of these are scheme special forms lmao
-    m_quote: ($) => seq("'", $._expr),
-    m_quasiquote: ($) => seq("`", $._expr),
-    m_unquote_splicing: ($) => seq("~@", $._expr),
-    m_unquote: ($) => seq("~", $._expr),
-    m_get: ($) => seq("%", $._expr),
-    m_dispatch: ($) => seq("#", choice("t", "f", "inf", "-inf", "nan", $.list)),
+    m_quote: ($) => seq(psym("'"), $._expr),
+    m_quasiquote: ($) => seq(psym("`"), $._expr),
+    m_unquote_splicing: ($) => seq(psym("~@"), $._expr),
+    m_unquote: ($) => seq(psym("~"), $._expr),
+    m_get: ($) => seq(psym("%"), $._expr),
+    m_dispatch: ($) =>
+      seq(psym("#"), choice("t", "f", "inf", "-inf", "nan", $.list)),
 
     string: ($) =>
       seq('"', repeat(choice($.string_text, $.string_escape)), '"'),
 
-    string_text: ($) => token(/[^"\\\n]+/),
+    string_text: ($) => token(/[^"\\\r\n]+/),
     string_escape: ($) =>
-      token(seq("\\", choice("n", "t", '"', "\\", /u\{[0-9a-fA-F]{1,6}\}/))),
+      token(
+        seq("\\", choice("n", "r", "t", '"', "\\", /u\{[0-9a-fA-F]{1,6}\}/)),
+      ),
 
     number: ($) => choice($.int, $.hex, $.float),
 
@@ -56,21 +71,17 @@ module.exports = grammar({
             // .. `.456`, `.000456`
             seq(".", /\d+/),
             // scientific: `123e10`, `123.e10`, `123.456e10`, `.456e10`, `.00456e10`
-            //   ^ `e10` there can also be `e-10` or `e+10`
+            //   ^ `e10` there can also be `e-10` or `e+10` (and `e` everywhere is case-insensitive)
             seq(
               choice(seq(uint(), optional(seq(".", /\d*/))), seq(".", /\d+/)),
-              seq(/e[+-]?/, uint()),
+              seq(/[eE][+-]?/, uint()),
             ),
           ),
         ),
       ),
 
     // anything excluding `(`, `)`, `[`, `]`, `"`, `;` and whitespace
-    //   additionally cannot start with a reader macro so that tree-sitter does not see such a symbol as a single token
-    symbol: ($) => token(/[^'`~%#()\[\]\s";][^()\[\]\s";]*/),
+    symbol: ($) => /[^()\[\]";\s]+/,
+    command_symbol: ($) => /![^()\[\]";\s]+/,
   },
 });
-
-function uint() {
-  return choice("0", /[1-9]\d*/);
-}
