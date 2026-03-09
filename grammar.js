@@ -1,13 +1,12 @@
 /// <reference types="tree-sitter-cli/dsl" />
 
 const uint = () => choice("0", /[1-9]\d*/);
-const psym = (s) => token(prec(1, s));
 
 module.exports = grammar({
   name: "tpl",
 
-  // handle all whitespace explicitly
-  extras: () => [],
+  extras: () => [], // handle all whitespace explicitly
+  supertypes: ($) => [$.expression],
 
   rules: {
     source_file: ($) =>
@@ -17,21 +16,25 @@ module.exports = grammar({
 
     command: ($) =>
       prec.right(
-        seq($.command_symbol, repeat(choice($._expr, $.comment, /[ \t]+/))),
+        seq(
+          $.command_identifier,
+          repeat(choice($.expression, $.comment, /[ \t]+/)),
+        ),
       ),
 
-    // exclude list and comment starts so freetext stops there
-    freetext: () => token(prec(-1000, /[^(\[;]+/)),
+    // exclude list, comment starts and newlines so freetext stops there
+    freetext: () => token(prec(-2, /[^(\[;\r\n]+/)),
     // no multiline comments, and single-line comments can stop before eol with another ;
-    comment: () => token(seq(psym(";"), /[^;\r\n]*/, optional(";"))),
+    comment: () => token(seq(";", /[^;\r\n]*/, optional(";"))),
 
     list: ($) =>
       choice(
-        seq("(", repeat(choice($._expr, $.comment, /\s+/)), ")"),
-        seq("[", repeat(choice($._expr, $.comment, /\s+/)), "]"),
+        seq("(", repeat(choice($.expression, $.comment, /\s+/)), ")"),
+        seq("[", repeat(choice($.expression, $.comment, /\s+/)), "]"),
       ),
 
-    _expr: ($) => choice($.reader_macro, $.list, $.string, $.number, $.symbol),
+    expression: ($) =>
+      choice($.reader_macro, $.list, $.string, $.number, $.identifier),
 
     reader_macro: ($) =>
       choice(
@@ -44,13 +47,12 @@ module.exports = grammar({
       ),
 
     // m_ prefixes because some of these are scheme special forms lmao
-    m_quote: ($) => seq(psym("'"), $._expr),
-    m_quasiquote: ($) => seq(psym("`"), $._expr),
-    m_unquote_splicing: ($) => seq(psym("~@"), $._expr),
-    m_unquote: ($) => seq(psym("~"), $._expr),
-    m_get: ($) => seq(psym("%"), $._expr),
-    m_dispatch: ($) =>
-      seq(psym("#"), choice("t", "f", "inf", "-inf", "nan", $.list)),
+    m_quote: ($) => seq("'", $.expression),
+    m_quasiquote: ($) => seq("`", $.expression),
+    m_unquote_splicing: ($) => seq("~@", $.expression),
+    m_unquote: ($) => seq("~", $.expression),
+    m_get: ($) => seq("%", $.expression),
+    m_dispatch: ($) => seq("#", choice("t", "f", "inf", "-inf", "nan", $.list)),
 
     string: ($) =>
       seq('"', repeat(choice($.string_text, $.string_escape)), '"'),
@@ -85,7 +87,7 @@ module.exports = grammar({
       ),
 
     // anything excluding `(`, `)`, `[`, `]`, `"`, `;` and whitespace
-    symbol: () => /[^()\[\]";\s]+/,
-    command_symbol: () => /![^()\[\]";\s]+/,
+    identifier: () => token(prec(-1, /[^()\[\]";\s]+/)),
+    command_identifier: () => /![^()\[\]";\s]+/,
   },
 });

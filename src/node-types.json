@@ -1,5 +1,31 @@
 [
   {
+    "type": "expression",
+    "named": true,
+    "subtypes": [
+      {
+        "type": "identifier",
+        "named": true
+      },
+      {
+        "type": "list",
+        "named": true
+      },
+      {
+        "type": "number",
+        "named": true
+      },
+      {
+        "type": "reader_macro",
+        "named": true
+      },
+      {
+        "type": "string",
+        "named": true
+      }
+    ]
+  },
+  {
     "type": "command",
     "named": true,
     "fields": {},
@@ -8,7 +34,7 @@
       "required": true,
       "types": [
         {
-          "type": "command_symbol",
+          "type": "command_identifier",
           "named": true
         },
         {
@@ -16,23 +42,7 @@
           "named": true
         },
         {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "reader_macro",
-          "named": true
-        },
-        {
-          "type": "string",
-          "named": true
-        },
-        {
-          "type": "symbol",
+          "type": "expression",
           "named": true
         }
       ]
@@ -51,23 +61,7 @@
           "named": true
         },
         {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "reader_macro",
-          "named": true
-        },
-        {
-          "type": "string",
-          "named": true
-        },
-        {
-          "type": "symbol",
+          "type": "expression",
           "named": true
         }
       ]
@@ -97,23 +91,7 @@
       "required": true,
       "types": [
         {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "reader_macro",
-          "named": true
-        },
-        {
-          "type": "string",
-          "named": true
-        },
-        {
-          "type": "symbol",
+          "type": "expression",
           "named": true
         }
       ]
@@ -128,23 +106,7 @@
       "required": true,
       "types": [
         {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "reader_macro",
-          "named": true
-        },
-        {
-          "type": "string",
-          "named": true
-        },
-        {
-          "type": "symbol",
+          "type": "expression",
           "named": true
         }
       ]
@@ -159,23 +121,7 @@
       "required": true,
       "types": [
         {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "reader_macro",
-          "named": true
-        },
-        {
-          "type": "string",
-          "named": true
-        },
-        {
-          "type": "symbol",
+          "type": "expression",
           "named": true
         }
       ]
@@ -190,23 +136,7 @@
       "required": true,
       "types": [
         {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "reader_macro",
-          "named": true
-        },
-        {
-          "type": "string",
-          "named": true
-        },
-        {
-          "type": "symbol",
+          "type": "expression",
           "named": true
         }
       ]
@@ -221,23 +151,7 @@
       "required": true,
       "types": [
         {
-          "type": "list",
-          "named": true
-        },
-        {
-          "type": "number",
-          "named": true
-        },
-        {
-          "type": "reader_macro",
-          "named": true
-        },
-        {
-          "type": "string",
-          "named": true
-        },
-        {
-          "type": "symbol",
+          "type": "expression",
           "named": true
         }
       ]
@@ -302,7 +216,7 @@
     }
   },
   {
-    "type": "root",
+    "type": "source_file",
     "named": true,
     "fields": {},
     "children": {
@@ -392,7 +306,7 @@
     "named": false
   },
   {
-    "type": "command_symbol",
+    "type": "command_identifier",
     "named": true
   },
   {
@@ -413,6 +327,10 @@
   },
   {
     "type": "hex",
+    "named": true
+  },
+  {
+    "type": "identifier",
     "named": true
   },
   {
@@ -437,10 +355,6 @@
   },
   {
     "type": "string_text",
-    "named": true
-  },
-  {
-    "type": "symbol",
     "named": true
   },
   {
