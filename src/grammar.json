@@ -1,7 +1,7 @@
 {
   "name": "tpl",
   "rules": {
-    "source_file": {
+    "root": {
       "type": "REPEAT",
       "content": {
         "type": "CHOICE",
@@ -23,11 +23,15 @@
             "name": "freetext"
           },
           {
-            "type": "PATTERN",
-            "value": "\\r+|\\n+"
+            "type": "SYMBOL",
+            "name": "newline"
           }
         ]
       }
+    },
+    "newline": {
+      "type": "PATTERN",
+      "value": "\\r?\\n"
     },
     "command": {
       "type": "PREC_RIGHT",
@@ -69,7 +73,7 @@
         "value": -1000,
         "content": {
           "type": "PATTERN",
-          "value": ".+"
+          "value": "[^(\\[;]+"
         }
       }
     },

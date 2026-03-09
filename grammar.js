@@ -7,19 +7,23 @@ module.exports = grammar({
   name: "tpl",
 
   // handle all whitespace explicitly
-  extras: ($) => [],
+  extras: () => [],
 
   rules: {
     source_file: ($) =>
-      repeat(choice($.command, $.list, $.comment, $.freetext, /\r+|\n+/)),
+      repeat(choice($.command, $.list, $.comment, $.freetext, $.newline)),
+
+    newline: () => /\r?\n/,
 
     command: ($) =>
       prec.right(
         seq($.command_symbol, repeat(choice($._expr, $.comment, /[ \t]+/))),
       ),
 
-    freetext: ($) => token(prec(-1000, /.+/)),
-    comment: ($) => token(seq(psym(";"), /[^;\r\n]*/, optional(";"))),
+    // exclude list and comment starts so freetext stops there
+    freetext: () => token(prec(-1000, /[^(\[;]+/)),
+    // no multiline comments, and single-line comments can stop before eol with another ;
+    comment: () => token(seq(psym(";"), /[^;\r\n]*/, optional(";"))),
 
     list: ($) =>
       choice(
@@ -51,17 +55,17 @@ module.exports = grammar({
     string: ($) =>
       seq('"', repeat(choice($.string_text, $.string_escape)), '"'),
 
-    string_text: ($) => token(/[^"\\\r\n]+/),
-    string_escape: ($) =>
+    string_text: () => token(/[^"\\\r\n]+/),
+    string_escape: () =>
       token(
         seq("\\", choice("n", "r", "t", '"', "\\", /u\{[0-9a-fA-F]{1,6}\}/)),
       ),
 
     number: ($) => choice($.int, $.hex, $.float),
 
-    int: ($) => token(seq(optional("-"), uint())),
-    hex: ($) => token(seq(optional("-"), "0x", /[0-9a-fA-F]+/)),
-    float: ($) =>
+    int: () => token(seq(optional("-"), uint())),
+    hex: () => token(seq(optional("-"), "0x", /[0-9a-fA-F]+/)),
+    float: () =>
       token(
         seq(
           optional("-"),
@@ -81,7 +85,7 @@ module.exports = grammar({
       ),
 
     // anything excluding `(`, `)`, `[`, `]`, `"`, `;` and whitespace
-    symbol: ($) => /[^()\[\]";\s]+/,
-    command_symbol: ($) => /![^()\[\]";\s]+/,
+    symbol: () => /[^()\[\]";\s]+/,
+    command_symbol: () => /![^()\[\]";\s]+/,
   },
 });
