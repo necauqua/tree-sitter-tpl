@@ -27,10 +27,12 @@ module.exports = grammar({
     // no multiline comments, and single-line comments can stop before eol with another ;
     comment: () => token(seq(";", /[^;\r\n]*/, optional(";"))),
 
+    _list_item: ($) => choice($.expression, $.comment, $.newline, /[ \t]+/),
+
     list: ($) =>
       choice(
-        seq("(", repeat(choice($.expression, $.comment, /\s+/)), ")"),
-        seq("[", repeat(choice($.expression, $.comment, /\s+/)), "]"),
+        seq("(", repeat($._list_item), ")"),
+        seq("[", repeat($._list_item), "]"),
       ),
 
     expression: ($) =>
